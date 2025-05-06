@@ -93,46 +93,35 @@ export class Game {
 
     return hasChanged;
   }
-
   mergeAdjacentTiles(direction = 'left', board = this.state) {
     let hasChanged = false;
 
     board.forEach((row) => {
-      const movementRange =
-        direction === 'left'
-          ? { start: 0, end: this.dimensions - 1, step: 1 }
-          : {
-              start: this.dimensions - 1,
-              end: 0,
-              step: -1,
-            };
+      const isLeft = direction === 'left';
+      const step = isLeft ? 1 : -1;
+      const start = isLeft ? 0 : this.dimensions - 1;
+      const end = isLeft ? this.dimensions - 1 : 0;
 
-      for (
-        let i = movementRange.start;
-        direction === 'left' ? i < movementRange.end : i > movementRange.end;
-        i += movementRange.step
-      ) {
-        if (
-          row[i] !== 0 &&
-          row[i] === row[i + (direction === 'left' ? 1 : -1)]
-        ) {
+      for (let i = start; isLeft ? i < end : i > end; i += step) {
+        const nextIndex = i + step;
+
+        if (row[i] !== 0 && row[i] === row[nextIndex]) {
           if (row[i] === 1024) {
             this.status = Game.possibleStatus.WIN;
           }
 
-          hasChanged = true;
           row[i] *= 2;
-          row[i + (direction === 'left' ? 1 : -1)] = 0;
+          row[nextIndex] = 0;
           this.score += row[i];
+          hasChanged = true;
 
-          i += direction === 'left' ? 1 : -1;
+          i += step; // Skip next index to avoid double merge
         }
       }
     });
 
     return hasChanged;
   }
-
   transposeMatrix(board) {
     return board[0].map((_, colIndex) => board.map((row) => row[colIndex]));
   }
